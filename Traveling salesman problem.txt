@@ -1,0 +1,60 @@
+import itertools
+
+class TravelingSalesmanProblem:
+    def __init__(self, distance_matrix):
+        """
+        Initialize the TSP problem with a distance matrix.
+        distance_matrix is a 2D list where distance_matrix[i][j] represents the
+        distance between city i and city j.
+        """
+        self.distance_matrix = distance_matrix
+        self.num_cities = len(distance_matrix)
+    
+    def calculate_path_cost(self, path):
+        """
+        Calculate the total cost of the given path.
+        """
+        cost = 0
+        for i in range(len(path) - 1):
+            cost += self.distance_matrix[path[i]][path[i+1]]
+        cost += self.distance_matrix[path[-1]][path[0]]  # Return to the start city
+        return cost
+    
+    def solve(self):
+        """
+        Solve the TSP problem using brute force (all permutations).
+        """
+        cities = list(range(self.num_cities))  # List of cities numbered 0, 1, 2, ..., n-1
+        min_cost = float('inf')
+        best_path = None
+        
+        # Generate all possible permutations of the cities (excluding the first city, which is fixed)
+        for perm in itertools.permutations(cities[1:]):
+            path = [cities[0]] + list(perm)  # Start from city 0
+            cost = self.calculate_path_cost(path)
+            
+            # Update minimum cost and best path
+            if cost < min_cost:
+                min_cost = cost
+                best_path = path
+        
+        return best_path, min_cost
+
+# Example: Distance matrix for 4 cities
+# In this example, cities are numbered 0, 1, 2, 3, and distance_matrix[i][j] is the distance from city i to city j
+distance_matrix = [
+    [0, 10, 15, 20],  # City 0 to other cities
+    [10, 0, 35, 25],  # City 1 to other cities
+    [15, 35, 0, 30],  # City 2 to other cities
+    [20, 25, 30, 0]   # City 3 to other cities
+]
+
+# Create an instance of the TSP problem
+tsp = TravelingSalesmanProblem(distance_matrix)
+
+# Solve the problem
+best_path, min_cost = tsp.solve()
+
+# Output the result
+print(f"The best path is: {best_path}")
+print(f"The minimum cost is: {min_cost}")

@@ -1,0 +1,121 @@
+import math
+
+# Helper function to calculate the entropy of a dataset
+def entropy(data):
+    total = len(data)
+    class_counts = {}
+    
+    # Count occurrences of each class label
+    for row in data:
+        label = row[-1]  # Last element is the class label
+        if label not in class_counts:
+            class_counts[label] = 0
+        class_counts[label] += 1
+    
+    # Calculate entropy
+    entropy_val = 0
+    for count in class_counts.values():
+        probability = count / total
+        entropy_val -= probability * math.log2(probability)
+    
+    return entropy_val
+
+# Helper function to calculate the information gain of a split
+def information_gain(data, feature_index):
+    total_entropy = entropy(data)
+    values = set([row[feature_index] for row in data])  # Unique values in the feature column
+    
+    weighted_entropy = 0
+    for value in values:
+        subset = [row for row in data if row[feature_index] == value]
+        subset_entropy = entropy(subset)
+        weighted_entropy += (len(subset) / len(data)) * subset_entropy
+    
+    return total_entropy - weighted_entropy
+
+# Function to find the best feature to split the data
+def best_split(data):
+    best_feature = -1
+    best_gain = -float('inf')
+    
+    # Try splitting on each feature (except the last column, which is the class label)
+    for feature_index in range(len(data[0]) - 1):
+        gain = information_gain(data, feature_index)
+        if gain > best_gain:
+            best_gain = gain
+            best_feature = feature_index
+    
+    return best_feature
+
+# Function to build the decision tree recursively
+def build_tree(data):
+    # If all rows have the same class label, return a leaf node
+    labels = [row[-1] for row in data]
+    if len(set(labels)) == 1:
+        return labels[0]
+    
+    # If there are no features left to split on, return the most frequent class
+    if len(data[0]) == 1:
+        return max(set(labels), key=labels.count)
+    
+    # Find the best feature to split on
+    best_feature = best_split(data)
+    tree = {best_feature: {}}
+    
+    # Split the data based on the best feature
+    values = set([row[best_feature] for row in data])
+    for value in values:
+        subset = [row for row in data if row[best_feature] == value]
+        tree[best_feature][value] = build_tree([row[:best_feature] + row[best_feature + 1:] for row in subset])
+    
+    return tree
+
+# Function to predict the class label for a new instance
+def predict(tree, instance):
+    if isinstance(tree, dict):
+        feature_index = list(tree.keys())[0]
+        feature_value = instance[feature_index]
+        return predict(tree[feature_index].get(feature_value), instance)
+    else:
+        return tree
+
+# Function to train and test the decision tree
+def decision_tree_classifier(data, test_data):
+    tree = build_tree(data)
+    print("Trained Decision Tree:", tree)
+    
+    predictions = []
+    for instance in test_data:
+        prediction = predict(tree, instance)
+        predictions.append(prediction)
+    
+    return predictions
+
+# Example usage:
+if __name__ == "__main__":
+    # Training data: each row is [feature1, feature2, ..., featureN, label]
+    training_data = [
+        [1, 1, 'Yes'],
+        [1, 0, 'No'],
+        [0, 1, 'Yes'],
+        [0, 0, 'No'],
+        [1, 1, 'Yes'],
+        [1, 0, 'No'],
+        [0, 1, 'Yes'],
+        [0, 0, 'No']
+    ]
+    
+    # Test data
+    test_data = [
+        [1, 1],  # Should predict 'Yes'
+        [0, 0],  # Should predict 'No'
+        [1, 0],  # Should predict 'No'
+        [0, 1]   # Should predict 'Yes'
+    ]
+    
+    # Train and test the decision tree
+    predictions = decision_tree_classifier(training_data, test_data)
+    
+    # Display predictions
+    for i, prediction in enumerate(predictions):
+        print(f"Prediction for test instance {test_data[i]}: {prediction}")

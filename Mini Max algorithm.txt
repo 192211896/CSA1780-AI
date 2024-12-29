@@ -1,0 +1,123 @@
+import random
+
+# Constants for players
+PLAYER_X = 'X'
+PLAYER_O = 'O'
+EMPTY = ' '
+
+# Function to print the board
+def print_board(board):
+    print("\n")
+    for row in board:
+        print(" | ".join(row))
+        print("---------")
+
+# Function to check if a player has won
+def check_winner(board, player):
+    # Check rows, columns, and diagonals
+    for i in range(3):
+        if all([board[i][j] == player for j in range(3)]) or all([board[j][i] == player for j in range(3)]):
+            return True
+    if all([board[i][i] == player for i in range(3)]) or all([board[i][2 - i] == player for i in range(3)]):
+        return True
+    return False
+
+# Function to check if the board is full
+def is_board_full(board):
+    return all([board[i][j] != EMPTY for i in range(3) for j in range(3)])
+
+# Minimax algorithm
+def minimax(board, depth, is_maximizing):
+    if check_winner(board, PLAYER_X):
+        return 10 - depth  # Maximize X's score
+    if check_winner(board, PLAYER_O):
+        return depth - 10  # Minimize O's score
+    if is_board_full(board):
+        return 0  # Tie, no more moves possible
+    
+    if is_maximizing:
+        best = -float('inf')
+        for i in range(3):
+            for j in range(3):
+                if board[i][j] == EMPTY:
+                    board[i][j] = PLAYER_X
+                    best = max(best, minimax(board, depth + 1, False))
+                    board[i][j] = EMPTY
+        return best
+    else:
+        best = float('inf')
+        for i in range(3):
+            for j in range(3):
+                if board[i][j] == EMPTY:
+                    board[i][j] = PLAYER_O
+                    best = min(best, minimax(board, depth + 1, True))
+                    board[i][j] = EMPTY
+        return best
+
+# Function to find the best move for the AI (Max player)
+def find_best_move(board):
+    best_val = -float('inf')
+    best_move = (-1, -1)
+    
+    # Iterate through the board to find the best move
+    for i in range(3):
+        for j in range(3):
+            if board[i][j] == EMPTY:
+                board[i][j] = PLAYER_X  # AI's move
+                move_val = minimax(board, 0, False)
+                board[i][j] = EMPTY
+                if move_val > best_val:
+                    best_val = move_val
+                    best_move = (i, j)
+    
+    return best_move
+
+# Function to handle the game logic
+def tic_tac_toe():
+    board = [[EMPTY for _ in range(3)] for _ in range(3)]
+    
+    print("Tic Tac Toe Game (AI as 'X' and Player as 'O')")
+    print_board(board)
+
+    while True:
+        # Player's (O) move
+        while True:
+            try:
+                row = int(input("Enter row (1-3) for 'O': ")) - 1
+                col = int(input("Enter column (1-3) for 'O': ")) - 1
+                if 0 <= row < 3 and 0 <= col < 3 and board[row][col] == EMPTY:
+                    board[row][col] = PLAYER_O
+                    break
+                else:
+                    print("Invalid move! Try again.")
+            except ValueError:
+                print("Invalid input! Please enter numbers between 1 and 3.")
+
+        # Print the board
+        print_board(board)
+
+        # Check for winner
+        if check_winner(board, PLAYER_O):
+            print("Player 'O' wins!")
+            break
+        if is_board_full(board):
+            print("It's a tie!")
+            break
+        
+        # AI's (X) move using Minimax
+        print("AI's turn (X):")
+        move = find_best_move(board)
+        board[move[0]][move[1]] = PLAYER_X
+        print_board(board)
+
+        # Check for winner
+        if check_winner(board, PLAYER_X):
+            print("AI (X) wins!")
+            break
+        if is_board_full(board):
+            print("It's a tie!")
+            break
+
+# Run the Tic Tac Toe game with Minimax AI
+if __name__ == "__main__":
+    tic_tac_toe()

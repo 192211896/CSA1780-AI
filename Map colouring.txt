@@ -1,0 +1,90 @@
+# Define the map and adjacency constraints
+class MapColoring:
+    def __init__(self, regions, adjacencies, colors):
+        """
+        Initialize the map coloring problem with:
+        - regions: List of regions (states or countries).
+        - adjacencies: Dictionary with region names as keys and lists of adjacent regions as values.
+        - colors: List of colors to use.
+        """
+        self.regions = regions
+        self.adjacencies = adjacencies
+        self.colors = colors
+        self.assignment = {}
+
+    def is_valid(self, region, color):
+        """
+        Check if the current color assignment is valid.
+        A color is valid if no adjacent region has the same color.
+        """
+        for neighbor in self.adjacencies[region]:
+            if neighbor in self.assignment and self.assignment[neighbor] == color:
+                return False
+        return True
+
+    def backtrack(self):
+        """
+        Perform the backtracking search to solve the map coloring problem.
+        """
+        # If all regions are assigned a color, return True (solution found)
+        if len(self.assignment) == len(self.regions):
+            return True
+        
+        # Select the first region that is not yet assigned a color
+        region = self.select_unassigned_region()
+        
+        # Try each color for this region
+        for color in self.colors:
+            if self.is_valid(region, color):
+                self.assignment[region] = color  # Assign the color
+                if self.backtrack():  # Recursively assign colors to remaining regions
+                    return True
+                del self.assignment[region]  # Backtrack if no valid assignment found
+                
+        return False  # No valid assignment found
+
+    def select_unassigned_region(self):
+        """
+        Select the first unassigned region.
+        For simplicity, we select the first region that is not yet assigned a color.
+        """
+        for region in self.regions:
+            if region not in self.assignment:
+                return region
+
+    def solve(self):
+        """
+        Solve the map coloring problem.
+        """
+        if self.backtrack():
+            return self.assignment
+        else:
+            return None
+
+
+# Example of a map coloring problem (Australia map)
+regions = ["WA", "NT", "SA", "Q", "NSW", "VIC", "TAS"]
+adjacencies = {
+    "WA": ["NT", "SA"],
+    "NT": ["WA", "SA", "Q"],
+    "SA": ["WA", "NT", "Q", "NSW", "VIC"],
+    "Q": ["NT", "SA", "NSW"],
+    "NSW": ["SA", "Q", "VIC"],
+    "VIC": ["SA", "NSW", "TAS"],
+    "TAS": ["VIC"]
+}
+colors = ["Red", "Green", "Blue"]
+
+# Create an instance of the MapColoring class
+map_coloring = MapColoring(regions, adjacencies, colors)
+
+# Solve the map coloring problem
+solution = map_coloring.solve()
+
+# Print the solution
+if solution:
+    print("Solution found:")
+    for region, color in solution.items():
+        print(f"{region}: {color}")
+else:
+    print("No solution found.")

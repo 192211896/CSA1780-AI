@@ -1,0 +1,89 @@
+import heapq
+
+class Node:
+    def __init__(self, position, g=0, h=0):
+        self.position = position  # (x, y)
+        self.g = g  # Cost from start to the current node
+        self.h = h  # Heuristic estimated cost from the current node to the goal
+        self.f = g + h  # Total cost (f = g + h)
+        self.parent = None  # To store the path
+
+    def __lt__(self, other):
+        return self.f < other.f  # To prioritize nodes with lower f value
+
+def a_star_algorithm(start, goal, grid):
+    """
+    Implements A* algorithm to find the shortest path from start to goal in a grid.
+    grid: 2D list representing the grid (0 = free space, 1 = obstacle).
+    """
+    # Directions to move (right, left, down, up)
+    directions = [(0, 1), (0, -1), (1, 0), (-1, 0)]
+
+    # Open and Closed list
+    open_list = []
+    closed_list = set()
+
+    # Create the start node and add it to the open list
+    start_node = Node(start, g=0, h=heuristic(start, goal))
+    heapq.heappush(open_list, start_node)
+
+    while open_list:
+        current_node = heapq.heappop(open_list)
+
+        # If the goal is reached, reconstruct the path
+        if current_node.position == goal:
+            path = []
+            while current_node:
+                path.append(current_node.position)
+                current_node = current_node.parent
+            return path[::-1]  # Reverse the path to get the correct order
+
+        closed_list.add(current_node.position)
+
+        # Explore neighbors
+        for direction in directions:
+            neighbor_pos = (current_node.position[0] + direction[0], current_node.position[1] + direction[1])
+
+            # Check if the neighbor is within bounds and not an obstacle or already visited
+            if (0 <= neighbor_pos[0] < len(grid) and
+                0 <= neighbor_pos[1] < len(grid[0]) and
+                grid[neighbor_pos[0]][neighbor_pos[1]] == 0 and
+                neighbor_pos not in closed_list):
+
+                # Create the neighbor node
+                g = current_node.g + 1  # Cost from start to the neighbor
+                h = heuristic(neighbor_pos, goal)  # Heuristic from neighbor to goal
+                neighbor_node = Node(neighbor_pos, g, h)
+                neighbor_node.parent = current_node
+
+                # If the neighbor is not in the open list or has a lower f value, add it
+                if not any(neighbor_node.position == open_node.position and neighbor_node.f >= open_node.f for open_node in open_list):
+                    heapq.heappush(open_list, neighbor_node)
+
+    return None  # If there is no path
+
+def heuristic(position, goal):
+    """Calculate the Manhattan distance heuristic (absolute difference in x and y)."""
+    return abs(position[0] - goal[0]) + abs(position[1] - goal[1])
+
+# Main Program
+if __name__ == "__main__":
+    # 0 = free space, 1 = obstacle
+    grid = [
+        [0, 0, 0, 0, 0],
+        [0, 1, 1, 0, 0],
+        [0, 0, 0, 1, 0],
+        [0, 1, 0, 0, 0],
+        [0, 0, 0, 1, 0]
+    ]
+
+    start = (0, 0)  # Starting position
+    goal = (4, 4)   # Goal position
+
+    path = a_star_algorithm(start, goal, grid)
+
+    if path:
+        print("Path found:", path)
+    else:
+        print("No path found.")
+
