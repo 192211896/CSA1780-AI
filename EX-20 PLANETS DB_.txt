@@ -1,0 +1,20 @@
+% Facts
+planet(mercury, rocky, small, no_ring).
+planet(venus, rocky, small, no_ring).
+planet(earth, rocky, medium, no_ring).
+planet(mars, rocky, small, no_ring).
+planet(jupiter, gas_giant, large, rings).
+planet(saturn, gas_giant, large, rings).
+planet(uranus, ice_giant, medium, rings).
+planet(neptune, ice_giant, medium, rings).
+% Rules
+is_planet(Name) :-
+    planet(Name, _, _, _).
+has_rings(Name) :-
+    planet(Name, _, _, rings).
+is_rocky_planet(Name) :-
+    planet(Name, rocky, _, _).
+is_gas_giant(Name) :-
+    planet(Name, gas_giant, _, _).
+is_ice_giant(Name) :-
+    planet(Name, ice_giant, _, _).

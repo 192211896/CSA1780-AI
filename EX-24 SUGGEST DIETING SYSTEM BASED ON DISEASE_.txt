@@ -1,0 +1,9 @@
+diet_for_diabetes(low_carb_diet).
+diet_for_hypertension(low_sodium_diet).
+diet_for_obesity(low_calorie_diet).
+diet_for_heart_disease(low_saturated_fat_diet).
+diet_for_allergies(gluten_free_diet).
+diet_for_general_health(balanced_diet).
+% Rules to suggest a diet based on a specific disease
+suggest_diet(Disease, Diet) :-
+    diet_for(Disease, Diet).
